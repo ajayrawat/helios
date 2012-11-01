@@ -85,6 +85,9 @@ protected:
 //	using namespace std;
 //	using namespace Ace;
 //
+
+//	double eps = 5e8*numeric_limits<double>::epsilon();
+//	cout << "Using epsilon = " << scientific << eps << endl;
 //	/* Library to check */
 //	std::string library = "c";
 //	std::string xsdir = Conf::DATAPATH + "/xsdir";
@@ -138,13 +141,13 @@ protected:
 //		double max_abs = checkXS(old_ab,ace_table->getAbsorption());
 //		double _max_diff = max(max_total,max_abs);
 //		double max_diff = max(_max_diff,max_ela);
-//		EXPECT_NEAR(0.0,max_diff,5e8*numeric_limits<double>::epsilon());
+//		EXPECT_NEAR(0.0,max_diff,eps);
 //
 //		size_t nrea = new_rea.size();
 //
 //		for(size_t i = 0 ; i < nrea ; i++) {
 //			double diff = checkXS(old_rea[i].getXS(),new_rea[i].getXS());
-//			EXPECT_NEAR(0.0,diff,5e8*numeric_limits<double>::epsilon());
+//			EXPECT_NEAR(0.0,diff,eps);
 //		}
 //
 //		delete ace_table;
@@ -173,21 +176,25 @@ protected:
 static double min_value = 01.00e-11;
 static double max_value = 20.00e+06;
 
-TEST_F(AceModuleTest, SumReactions) {
+TEST_F(AceModuleTest, CheckProbabilities) {
 	using namespace Helios;
 	using namespace Ace;
 	using namespace std;
 
+	double eps = 5e12*numeric_limits<double>::epsilon();
+	cout << "Using epsilon = " << scientific << eps << endl;
+
 	vector<McObject*> ace_objects;
 	vector<string> test_isotopes;
-	for(size_t i = 0 ; i < isotopes.size() ; ++i) {
-		string name = isotopes[i];
-		string first = name.substr(0);
-		/* Check only heavy isotopes */
-		if(first.find("92232") != string::npos) {
-			test_isotopes.push_back(isotopes[i]);
-			ace_objects.push_back(new AceObject(isotopes[i]));
-		}
+
+	/* Number of isotopes */
+	size_t nisotopes = 30;
+	srand(time(0)); /* On each test select different random isotopes */
+
+	for(size_t i = 0 ; i < nisotopes ; ++i) {
+		string name = isotopes[rand()%isotopes.size()];
+		test_isotopes.push_back(name);
+		ace_objects.push_back(new AceObject(name));
 	}
 
 	/* Setup environment */
@@ -232,16 +239,18 @@ TEST_F(AceModuleTest, SumReactions) {
 
 			/* Get probabilities */
 			double abs_prob = sigma_a / sigma_t;
-			/* Check against interpolated values */
 			double expected_abs = iso->getAbsorptionProb(pair_energy);
-			cout << energy << " ; " << abs_prob << " ; " << expected_abs << endl;
-			//EXPECT_NEAR(abs_prob,expected_abs,5e8*numeric_limits<double>::epsilon());
 
+			/* Check against interpolated values */
+			EXPECT_NEAR(abs_prob,expected_abs,eps);
+
+			/* Check fission if the isotope is fissile */
 			if(iso->isFissile()) {
 				double sigma_f = factor * (fission_xs[idx + 1] - fission_xs[idx]) + fission_xs[idx];
 				double fis_prob = sigma_f / sigma_t;
 				double expected_fis = iso->getFissionProb(pair_energy);
-				//EXPECT_NEAR(fis_prob,expected_fis,5e8*numeric_limits<double>::epsilon());
+				/* Check against interpolated values */
+				EXPECT_NEAR(fis_prob,expected_fis,eps);
 			}
 
 		}

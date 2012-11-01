@@ -49,6 +49,7 @@ namespace Helios {
 
 		/* Constant reference to a CHILD grid */
 		const ChildGrid* child_grid;
+
 		/* Absorption probability */
 		std::vector<double> absorption_prob;
 		/* Fission probability */

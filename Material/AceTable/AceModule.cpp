@@ -61,7 +61,10 @@ AceIsotope::AceIsotope(const Ace::ReactionContainer& _reactions, const ChildGrid
 	/* Set the absorption probability */
 	CrossSection absorption_xs = reactions.get_xs(27);
 	/* Check size */
-	assert(absorption_xs.size() == sigma_total.size());
+	if(absorption_xs.size() != sigma_total.size()) {
+		cout << reactions.name() << " st = " << sigma_total.size() << " sa = " << absorption_xs.size() << endl;
+		exit(1);
+	}
 	/* Resize the probability array */
 	absorption_prob.resize(sigma_total.size());
 
