@@ -190,12 +190,14 @@ TEST_F(AceModuleTest, CheckProbabilities) {
 	/* Number of isotopes */
 	size_t nisotopes = 30;
 	srand(time(0)); /* On each test select different random isotopes */
-
 	for(size_t i = 0 ; i < nisotopes ; ++i) {
 		string name = isotopes[rand()%isotopes.size()];
 		test_isotopes.push_back(name);
 		ace_objects.push_back(new AceObject(name));
 	}
+
+//	test_isotopes.push_back("94246.03c");
+//	ace_objects.push_back(new AceObject("94246.03c"));
 
 	/* Setup environment */
 	environment->pushObjects(ace_objects.begin(), ace_objects.end());
@@ -252,8 +254,8 @@ TEST_F(AceModuleTest, CheckProbabilities) {
 				/* Check against interpolated values */
 				EXPECT_NEAR(fis_prob,expected_fis,eps);
 			}
-
 		}
+		delete ace_table;
 	}
 }
 
